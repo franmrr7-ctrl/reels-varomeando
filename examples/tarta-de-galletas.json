@@ -1,0 +1,13 @@
+{
+  "name": "tarta-de-galletas-con-chocolate",
+  "photo_url": "https://varomeando.es/wp-content/uploads/2020/11/Tarta-de-chocolate-y-galletas.jpg",
+  "titulo": ["Tarta de", "galletas"],
+  "gancho": ["Sin horno y sin prisa", "Se termina sola en la nevera"],
+  "ingredientes": ["500 g de galletas", "250 ml de leche", "1 cucharada de cacao en polvo", "120 g de azúcar", "500 ml de leche para la crema"],
+  "pasos": [
+    {"titulo": ["La crema", "de chocolate"], "texto": ["Leche, azúcar y cacao: 7 min · 90 °C · vel 3", "Deja templar antes de montar", "Reserva en el vaso"]},
+    {"titulo": ["Monta", "las capas"], "texto": ["Moja las galletas en leche", "Alterna galletas y crema", "Termina con una capa de crema"]},
+    {"titulo": ["Frío", "y a esperar"], "texto": ["Tapa y guarda en la nevera", "Mejor de un día para otro", "Sirve fría y bien cortada"]}
+  ],
+  "cta": "varomeando.es"
+}

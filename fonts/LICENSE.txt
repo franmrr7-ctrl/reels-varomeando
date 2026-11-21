@@ -1,0 +1,2 @@
+Yanone Kaffeesatz (Yanone) y Noto Serif (Google / Noto Project): SIL Open Font License 1.1.
+Fuente: https://github.com/google/fonts (carpetas ofl/yanonekaffeesatz y ofl/notoserif).

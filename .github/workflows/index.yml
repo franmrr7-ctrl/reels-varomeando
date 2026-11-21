@@ -1,0 +1,28 @@
+name: Indexar recetas
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * *"   # cada madrugada: detecta recetas nuevas o modificadas
+
+permissions:
+  contents: write
+
+concurrency:
+  group: index
+  cancel-in-progress: false
+
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Leer sitemaps y fichas de receta
+        run: python3 build_index.py
+      - name: Guardar cambios
+        run: |
+          git config user.name "reels-bot"
+          git config user.email "reels-bot@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then echo "Sin cambios"; else git commit -m "Actualiza indice de recetas" && git push; fi
