@@ -5,6 +5,7 @@ La API REST de WordPress no expone el tipo de contenido de las recetas (osetin_r
 sitemaps y, de cada pagina, el JSON-LD schema.org/Recipe. Salida:
   data/index.json         lista ligera [{id, slug, url, title, image}] ordenada por id
   data/recipes/<id>.json  receta completa (ingredientes, pasos, tiempos) para el prompt de Gemini
+  data/all.json           todas las recetas en un solo fichero compacto (lo lee Make en una sola peticion)
 
 Solo se descargan las paginas nuevas o modificadas (lastmod del sitemap). Variable SECTIONS: secciones de la URL a
 incluir, por defecto solo recetathermomix (las otras son versiones Mambo y tradicional de los mismos platos).
@@ -172,6 +173,21 @@ def main():
         if fn not in keep:
             os.remove(os.path.join(OUT, "recipes", fn))
     json.dump(rows, open(idx_path, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    # all.json: todo en un solo fichero para que Make lo lea con una unica peticion (ahorra operaciones)
+    full = []
+    for r in rows:
+        rec = json.load(open(os.path.join(OUT, "recipes", f"{r['id']}.json"), encoding="utf-8"))
+        steps, used = [], 0
+        for st in rec["steps"]:
+            st = st[:420]
+            if used + len(st) > 3200:
+                break
+            steps.append(st)
+            used += len(st)
+        full.append({k: rec[k] for k in ("id", "slug", "url", "title", "image", "description", "totalTime", "yield",
+                                         "category", "ingredients")} | {"steps": steps})
+    json.dump(full, open(os.path.join(OUT, "all.json"), "w", encoding="utf-8"), ensure_ascii=False,
+              separators=(",", ":"))
     print(f"indice: {len(rows)} recetas ({fetched} descargadas, {skipped} omitidas)")
 
 
