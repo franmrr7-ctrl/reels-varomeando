@@ -1,0 +1,27 @@
+{
+ "id": 2856,
+ "slug": "bechamel",
+ "url": "https://varomeando.es/recetathermomix/bechamel/",
+ "title": "Bechamel",
+ "description": "En tan solo 10 minutos aprenderás a realizar esta Salsa de Bechamel para Thermomix, una receta sencilla que te enseñamos a realizar paso a paso",
+ "image": "https://varomeando.es/wp-content/uploads/2020/03/bechamel-receta.jpg",
+ "prepTime": "PT2M",
+ "cookTime": "PT10M",
+ "totalTime": "PT12M",
+ "yield": "4 raciones",
+ "category": "Salsas y Condimentos",
+ "ingredients": [
+  "50 gramos Mantequilla",
+  "75 gramos Harina",
+  "Al gusto Sal",
+  "750 gramos Leche",
+  "20 ml Aceite de Oliva"
+ ],
+ "steps": [
+  "Añadimos la mantequilla al vaso de la Thermomix y le damos un poco de calor para fundirla a Velocidad 2, 100º, 2 minutos.",
+  "Incorporamos la harina cerca de las cuchillas y damos 2 minutos mas a igual temperatura y Velocidad Cuchara.",
+  "Añadimos la leche y sazonamos. Programamos durante 10 segundos a Velocidad 5.",
+  "Programamos a 100º, Velocidad 4 durante 8 minutos. Sacamos y dejamos enfriar para que espese un poco. Ya tienes la salsa bechamel lista."
+ ],
+ "lastmod": "2026-11-05T10:29:12+00:00"
+}

@@ -1,0 +1,31 @@
+{
+ "id": 2259,
+ "slug": "guacamole",
+ "url": "https://varomeando.es/recetathermomix/guacamole/",
+ "title": "Guacamole",
+ "description": "En tan solo 10 minutos podrá realizar esta receta Thermomix de Guacamole, una receta sencilla que te enseñamos a realizar paso a paso",
+ "image": "https://varomeando.es/wp-content/uploads/2019/08/guacamole-receta.jpg",
+ "prepTime": "PT10M",
+ "cookTime": "PT0M",
+ "totalTime": "PT10M",
+ "yield": "6-8",
+ "category": "Aperitivos y Entrantes",
+ "ingredients": [
+  "500-600 gr. Aguacates",
+  "100 gr. Cebolla",
+  "1 diente Ajo",
+  "120 gr. Tomate Maduro",
+  "2 cucharadas Zumo de Limon",
+  "Una cucharadita Sal",
+  "5 ramitas Cilantro Frescco",
+  "2 Chiles Frescos"
+ ],
+ "steps": [
+  "Cortamos los chiles por la mitad y les quitamos las semillas. Abrimos los aguacates por la mitad, les quitamos el hueso y la cáscara. Deberíamos tener unos 450 gr. de aguacate listo para hacer el guacamole. Preparamos el cilantro, cogiendo solo las hojas.",
+  "Ponemos las hojas de cilantro en el vaso de la Thermomix. Programamos 3 segundos Velocidad 5.",
+  "Incorporamos la cebolla partida en cuartos, los chiles, el ajo y el tomate. Programamos 5 segundos Velocidad 5. Retiramos y reservamos.",
+  "Sin limpiar el vaso, ponemos los aguacates, el zumo de limón y la sal. Programamos 10 segundos Velocidad 3.",
+  "Agregamos la cebolla y el tomate reservados. Programamos 10 segundos Velocidad 3."
+ ],
+ "lastmod": "2026-11-05T10:41:05+00:00"
+}
