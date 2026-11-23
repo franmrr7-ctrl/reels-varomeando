@@ -96,3 +96,22 @@ jobs:
           gh release list --limit 300 --json tagName --jq '.[].tagName' | while read -r t; do
             [ -n "$t" ] && [ "$t" != "$TAG" ] && gh release delete "$t" --cleanup-tag --yes || true
           done
+      - name: Preparar la siguiente receta
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json
+          d = json.load(open("data/all.json", encoding="utf-8"))
+          st = json.load(open("data/state.json"))
+          i = (st["i"] + 1) % len(d)
+          json.dump({"i": i}, open("data/state.json", "w"))
+          json.dump([d[i]], open("data/next.json", "w"), ensure_ascii=False)
+          PY
+          git config user.name "reels-bot"
+          git config user.email "reels-bot@users.noreply.github.com"
+          git add data/state.json data/next.json
+          git commit -m "Siguiente receta" || exit 0
+          git pull --rebase -q || true
+          git push -q
+          curl -s "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@main/data/next.json" > /dev/null || true
