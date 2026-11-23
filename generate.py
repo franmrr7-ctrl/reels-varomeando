@@ -36,10 +36,13 @@ FONT_TITLE = os.path.join(HERE, "fonts", "YanoneKaffeesatz.ttf")  # tipografia d
 FONT_BODY = os.path.join(HERE, "fonts", "NotoSerif.ttf")          # sucesora de Droid Serif (texto de la web)
 
 # Paleta Varomeando: naranja del logo, negro calido, crema y coral del sello
-ORANGE = (243, 161, 42, 255)
-INK = (26, 20, 16)
-CREAM = (255, 248, 238, 255)
-CORAL = (255, 92, 92, 255)
+# Estilo CLARO con los colores de la marca: coral del sello, verde azulado y fondo crema-menta de la web
+ORANGE = (200, 68, 60, 255)    # acento: coral/rojo del logo (kicker, pastillas, vinetas, marco)
+TEAL = (38, 120, 128, 255)     # acento secundario: verde azulado de la web
+INK = (255, 251, 244, 255)     # texto sobre el acento (crema)
+CREAM = (28, 42, 46, 255)      # texto principal sobre el fondo claro (tinta oscura)
+LIGHT = (238, 243, 242)        # fondo de la web
+CORAL = (200, 68, 60, 255)
 BRAND = "VAROMEANDO.ES"
 
 CARD_W, CARD_X = 960, 60
@@ -209,7 +212,7 @@ def make_bg(base, card_y, card_h):
     bg = base.copy().convert("RGBA")
     sh = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     ImageDraw.Draw(sh).rounded_rectangle((CARD_X, card_y + 18, CARD_X + CARD_W, card_y + card_h + 18),
-                                         radius=CARD_R, fill=(0, 0, 0, 190))
+                                         radius=CARD_R, fill=(20, 40, 44, 70))
     bg = Image.alpha_composite(bg, sh.filter(ImageFilter.GaussianBlur(30)))
     ImageDraw.Draw(bg).rounded_rectangle((CARD_X - BORDER, card_y - BORDER, CARD_X + CARD_W + BORDER,
                                           card_y + card_h + BORDER), radius=CARD_R + BORDER, fill=ORANGE)
@@ -249,7 +252,7 @@ def main(src, dst):
     base = base.crop(((base.width - W) // 2, (base.height - H) // 2, (base.width - W) // 2 + W,
                       (base.height - H) // 2 + H))
     base = base.filter(ImageFilter.GaussianBlur(40))
-    base = Image.blend(base, Image.new("RGB", (W, H), INK), 0.80)
+    base = Image.blend(base, Image.new("RGB", (W, H), LIGHT), 0.90)
 
     pasos = data["pasos"][:3]
     ing = as_lines(data["ingredientes"])[:9]
@@ -259,7 +262,7 @@ def main(src, dst):
     # geometria de la portada: la tarjeta se adapta a la proporcion de la foto y el conjunto se centra
     hero_h = int(max(HERO_MIN, min(HERO_MAX, CARD_W * photo.height / photo.width))) // 2 * 2
     hero_text_h = text_layer(None, None, titulo, gancho, body_size=66, title_size=170, bullets=False,
-                             y0=0, body_fill=ORANGE, draw=False)
+                             y0=0, body_fill=TEAL, draw=False)
     content_h = hero_h + 56 + hero_text_h
     hero_y = 170 + max(0, (SAFE_BOTTOM - 170 - content_h) // 2)
 
@@ -298,11 +301,11 @@ def main(src, dst):
         # ajusta el tamano del cuerpo para que nunca invada el borde inferior
         while bsz > 34 and text_layer(None, kicker, title, body, body_size=bsz, title_size=tsz, bullets=bul,
                                       y0=y0, chips=chips, draw=False,
-                                      body_fill=ORANGE if hero_scene else CREAM) > SAFE_BOTTOM:
+                                      body_fill=TEAL if hero_scene else CREAM) > SAFE_BOTTOM:
             bsz -= 2
         layer = os.path.join(tmp, f"{name}.png")
         text_layer(layer, kicker, title, body, body_size=bsz, title_size=tsz, bullets=bul, y0=y0, chips=chips,
-                   body_fill=ORANGE if hero_scene else CREAM)
+                   body_fill=TEAL if hero_scene else CREAM)
         # foto de la tarjeta con margen para el zoom / paneo
         src_img = cover(photo, int(CARD_W * 1.10 * 2), int(ch * 1.10 * 2))  # al doble: el zoom/paneo se reduce despues, sin temblor
         src_path = os.path.join(tmp, f"{name}_foto.jpg")
