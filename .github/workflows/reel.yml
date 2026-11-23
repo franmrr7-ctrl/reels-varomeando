@@ -81,15 +81,17 @@ jobs:
           name=$(printf '%s' "$IN_NAME" | tr -c 'a-zA-Z0-9_-' '-')
           python generate.py receta.json "$name.mp4"
           echo "FILE=$name.mp4" >> "$GITHUB_ENV"
-          echo "TAG=reel-$name-${{ github.run_id }}" >> "$GITHUB_ENV"
+          echo "TAG=reel-$name" >> "$GITHUB_ENV"
       - name: Publicar como release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$TAG" "$FILE" --title "$TAG" --notes "Reel generado automaticamente"
+        run: |
+          gh release delete "$TAG" --cleanup-tag --yes 2>/dev/null || true
+          gh release create "$TAG" "$FILE" --title "$TAG" --notes "Reel generado automaticamente"
       - name: Limpiar releases antiguas (conserva las 40 ultimas)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release list --limit 300 --json tagName --jq '.[40:][].tagName' | while read -r t; do
-            [ -n "$t" ] && gh release delete "$t" --cleanup-tag --yes || true
+            [ -n "$t" ] && [ "$t" != "$TAG" ] && gh release delete "$t" --cleanup-tag --yes || true
           done
