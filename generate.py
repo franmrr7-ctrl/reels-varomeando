@@ -294,7 +294,6 @@ def main(src, dst):
         make_mask(ch).save(masks[k])
 
     files, offset = [], 0.0
-    starts = []
     for name, dur, g, kicker, title, body, tsz, bsz, bul, pan, chips in scenes:
         cy, ch = geo[g]
         hero_scene = g == "hero"
@@ -339,7 +338,6 @@ def main(src, dst):
                 "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", out]
         subprocess.run(cmd, check=True)
         files.append(out)
-        starts.append(offset)
         offset += dur
 
     lst = os.path.join(tmp, "list.txt")
@@ -364,25 +362,6 @@ def main(src, dst):
     if not done:
         make_music(wav, total + 0.5, variant=key % len(MUSIC_PRESETS))
     part = dst + ".part.mp4"
-    # efectos de sonido sincronizados con las escenas (si fallan, el reel sale solo con musica)
-    sfx_wav = os.path.join(tmp, "sfx.wav")
-    try:
-        sys.path.insert(0, HERE)
-        from sfx import make_sfx
-        make_sfx(sfx_wav, starts, total)
-        have_sfx = True
-    except Exception as ex:
-        print("sin sfx:", ex)
-        have_sfx = False
-    if have_sfx:
-        afc = (f"[1:a]loudnorm=I=-20:TP=-2:LRA=7,afade=t=in:st=0:d=0.8,afade=t=out:st={total-1.5}:d=1.5[m];"
-               f"[m][2:a]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95[a]")
-        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", silent, "-i", wav, "-i", sfx_wav,
-                        "-filter_complex", afc, "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac",
-                        "-b:a", "192k", "-t", str(total), "-movflags", "+faststart", part], check=True)
-        os.replace(part, dst)
-        print(f"ok: {dst} ({total:.1f} s)")
-        return
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", silent, "-i", wav,
                     "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "160k",
                     "-af", f"loudnorm=I=-18:TP=-2:LRA=7,afade=t=in:st=0:d=0.8,afade=t=out:st={total-1.5}:d=1.5",
