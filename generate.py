@@ -268,15 +268,15 @@ def main(src, dst):
 
     # (nombre, duracion, geometria, kicker, titulo, cuerpo, tam titulo, tam cuerpo, vinetas, paneo, chips)
     scenes = [
-        ("s1", 2.4, "hero", None, titulo, gancho, 170, 66, False, None, None),
-        ("s2", min(4.0, 1.5 + 0.28 * len(ing)), "panel", "INGREDIENTES", [], ing, 110, 54, True, (0.9, 0.3), None),
+        ("s1", 2.0, "hero", None, titulo, gancho, 170, 66, False, None, None),
+        ("s2", min(3.4, 1.3 + 0.24 * len(ing)), "panel", "INGREDIENTES", [], ing, 110, 54, True, (0.9, 0.3), None),
     ]
     for i, p in enumerate(pasos, 1):
         body = as_lines(p["texto"])
-        dur = min(3.8, 2.0 + 0.4 * len(body))
+        dur = min(3.2, 1.7 + 0.35 * len(body))
         scenes.append((f"s{i+2}", dur, "panel", f"PASO {i}", as_lines(p["titulo"]), body, 136, 54, True,
                        ((0.4, 0.8) if i % 2 else (0.8, 0.3)), chips_from(body)))
-    scenes.append(("s6", 2.2, "panel", None, ["Receta", "completa"], [cta, "Paso a paso en el primer comentario"],
+    scenes.append(("s6", 2.4, "panel", None, ["Receta", "completa"], [cta, "Paso a paso en el primer comentario"],
                    150, 58, False, (0.2, 0.5), None))
     total = sum(sc[1] for sc in scenes)
 
@@ -294,6 +294,7 @@ def main(src, dst):
         make_mask(ch).save(masks[k])
 
     files, offset = [], 0.0
+    starts = []
     for name, dur, g, kicker, title, body, tsz, bsz, bul, pan, chips in scenes:
         cy, ch = geo[g]
         hero_scene = g == "hero"
@@ -338,6 +339,7 @@ def main(src, dst):
                 "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", out]
         subprocess.run(cmd, check=True)
         files.append(out)
+        starts.append(offset)
         offset += dur
 
     lst = os.path.join(tmp, "list.txt")
@@ -362,6 +364,25 @@ def main(src, dst):
     if not done:
         make_music(wav, total + 0.5, variant=key % len(MUSIC_PRESETS))
     part = dst + ".part.mp4"
+    # efectos de sonido sincronizados con las escenas (si fallan, el reel sale solo con musica)
+    sfx_wav = os.path.join(tmp, "sfx.wav")
+    try:
+        sys.path.insert(0, HERE)
+        from sfx import make_sfx
+        make_sfx(sfx_wav, starts, total)
+        have_sfx = True
+    except Exception as ex:
+        print("sin sfx:", ex)
+        have_sfx = False
+    if have_sfx:
+        afc = (f"[1:a]loudnorm=I=-20:TP=-2:LRA=7,afade=t=in:st=0:d=0.8,afade=t=out:st={total-1.5}:d=1.5[m];"
+               f"[m][2:a]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95[a]")
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", silent, "-i", wav, "-i", sfx_wav,
+                        "-filter_complex", afc, "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac",
+                        "-b:a", "192k", "-t", str(total), "-movflags", "+faststart", part], check=True)
+        os.replace(part, dst)
+        print(f"ok: {dst} ({total:.1f} s)")
+        return
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", silent, "-i", wav,
                     "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "160k",
                     "-af", f"loudnorm=I=-18:TP=-2:LRA=7,afade=t=in:st=0:d=0.8,afade=t=out:st={total-1.5}:d=1.5",
