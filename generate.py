@@ -227,9 +227,20 @@ def main(src, dst):
     tmp = tempfile.mkdtemp(prefix="reel_")
 
     photo_path = os.path.join(tmp, "foto")
-    req = urllib.request.Request(data["photo_url"], headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=60) as r, open(photo_path, "wb") as f:
-        f.write(r.read())
+    import re
+    url0 = data["photo_url"]
+    # WordPress guarda miniaturas "nombre-300x200.jpg": probamos primero el original a maxima resolucion
+    cands = [re.sub(r"-\d{2,4}x\d{2,4}(\.[A-Za-z]+)$", r"\1", url0), url0]
+    blob = None
+    for u in dict.fromkeys(cands):
+        try:
+            req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=60) as r:
+                blob = r.read()
+            break
+        except Exception as ex:
+            print("foto no disponible:", u, ex)
+    open(photo_path, "wb").write(blob)
     photo = Image.open(photo_path).convert("RGB")
 
     # fondo comun: foto desenfocada y oscurecida
@@ -293,7 +304,7 @@ def main(src, dst):
         text_layer(layer, kicker, title, body, body_size=bsz, title_size=tsz, bullets=bul, y0=y0, chips=chips,
                    body_fill=ORANGE if hero_scene else CREAM)
         # foto de la tarjeta con margen para el zoom / paneo
-        src_img = cover(photo, int(CARD_W * 1.10), int(ch * 1.10))
+        src_img = cover(photo, int(CARD_W * 1.10 * 2), int(ch * 1.10 * 2))  # al doble: el zoom/paneo se reduce despues, sin temblor
         src_path = os.path.join(tmp, f"{name}_foto.jpg")
         src_img.save(src_path, quality=95)
         out = os.path.join(tmp, f"{name}.mp4")
@@ -302,23 +313,25 @@ def main(src, dst):
         slide = "0" if hero_scene else "if(lt(t,0.45),36*(1-t/0.45),0)"
         fin = "" if hero_scene else "fade=t=in:st=0:d=0.2,"
         if hero_scene:
-            motion = (f"scale=w='iw*(1+0.04*t/{dur})':h=-1:eval=frame:flags=lanczos,crop={CARD_W}:{ch}")
+            motion = (f"scale=w='iw*(1+0.04*t/{dur})':h=-1:eval=frame:flags=lanczos,crop={CARD_W*2}:{ch*2},"
+                      f"scale={CARD_W}:{ch}:flags=lanczos+accurate_rnd")
         else:
-            mx = src_img.width - CARD_W
+            mx = src_img.width - CARD_W * 2
             x0, x1 = int(mx * pan[0]), int(mx * pan[1])
-            motion = f"crop={CARD_W}:{ch}:x='{x0}+({x1}-{x0})*t/{dur}':y='(ih-oh)/2'"
+            motion = (f"crop={CARD_W*2}:{ch*2}:x='{x0}+({x1}-{x0})*t/{dur}':y='(ih-oh)/2',"
+                      f"scale={CARD_W}:{ch}:flags=lanczos+accurate_rnd")
         fc = (f"[2:v]{text_fx}[t];[3:v]format=rgba[b];[4:v]format=gray[m];"
               f"[1:v]{motion},eq=saturation=1.12:contrast=1.05,unsharp=5:5:0.4[c0];[c0][m]alphamerge[c];"
               f"[0:v][c]overlay={CARD_X}:{cy}:format=gbrp[a];"
               f"[a][t]overlay=0:'{slide}':format=gbrp[x];"
               f"[x][b]overlay=x='-{W}+{W}*({offset}+t)/{total}':y=0:format=gbrp,"
-              f"scale=flags=lanczos+accurate_rnd+full_chroma_int:out_color_matrix=bt709,format=yuv420p,"
+              f"scale=1440:2560:flags=lanczos+accurate_rnd+full_chroma_int:out_color_matrix=bt709,format=yuv420p,"
               f"{fin}fade=t=out:st={dur-0.2}:d=0.2[v]")
         cmd = ["ffmpeg", "-y", "-loglevel", "error"]
         for p in (bgs[g], src_path, layer, bar_path, masks[g]):
             cmd += ["-framerate", "30", "-loop", "1", "-t", str(dur), "-i", p]
         cmd += ["-filter_complex", fc, "-map", "[v]", "-r", "30",
-                "-c:v", "libx264", "-crf", "12", "-preset", "slow", "-pix_fmt", "yuv420p",
+                "-c:v", "libx264", "-crf", "12", "-preset", "slow", "-tune", "film", "-g", "60", "-pix_fmt", "yuv420p",
                 "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", out]
         subprocess.run(cmd, check=True)
         files.append(out)
