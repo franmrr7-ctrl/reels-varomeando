@@ -246,7 +246,7 @@ def main(src, dst):
     titulo, gancho = as_lines(data["titulo"]), as_lines(data["gancho"])
 
     # geometria de la portada: la tarjeta se adapta a la proporcion de la foto y el conjunto se centra
-    hero_h = int(max(HERO_MIN, min(HERO_MAX, CARD_W * photo.height / photo.width)))
+    hero_h = int(max(HERO_MIN, min(HERO_MAX, CARD_W * photo.height / photo.width))) // 2 * 2
     hero_text_h = text_layer(None, None, titulo, gancho, body_size=66, title_size=170, bullets=False,
                              y0=0, body_fill=ORANGE, draw=False)
     content_h = hero_h + 56 + hero_text_h
